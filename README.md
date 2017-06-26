@@ -14,3 +14,12 @@ This tool only support *.anim file, not support FBX file.
 4.click AnimationTool->ProcessRotationInterpolationForConstant
 
 5.Done.
+
+
+
+About this demo.
+
+
+test_interpolation.anim doesn't expect when playing.
+
+test_ok.anim is processed from test_interpolation.anim.
