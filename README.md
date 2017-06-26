@@ -2,6 +2,8 @@
 
 Fix rotation interpolation of constant
 
+This tool only support *.anim file, not support FBX file.
+
 
 1.modify you animtion in Unity Animtion Window
 
