@@ -1,6 +1,6 @@
 # CustomAnimationTools
 
-Fix rotation interpolation of constant
+Fix rotation interpolation of constant.   Unity 5.5
 
 This tool only support *.anim file, not support FBX file.
 
