@@ -74,7 +74,56 @@ namespace AnimationTools
         static void ProcessCurveForConstant(string clipPath)
         {
             Debug.Log("Processing : " + clipPath);
-            ProcessCurveForConstant(AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath));
+            ProcessCurveForConstant2(AssetDatabase.LoadAssetAtPath<AnimationClip>(clipPath));
+        }
+
+        static void ProcessCurveForConstant2(AnimationClip animationClip)
+        {
+            var soClip = new SerializedObject(animationClip);
+            soClip.ApplyModifiedProperties();
+
+            string[] curveSetNames = new string[] { "m_PositionCurves", "m_RotationCurves", "m_ScaleCurves", "m_FloatCurves" };
+
+            foreach (var curveSetName in curveSetNames)
+            {
+                var curCurveSet = soClip.FindProperty(curveSetName);
+                int curCurveSetLenght = curCurveSet.arraySize;
+                if (curCurveSetLenght == 0)
+                {
+                    Debug.Log("Can not fine curves in " + curveSetName);
+                    continue;
+                }
+
+                bool isHaveAttribute = curveSetName == "m_FloatCurves";
+
+                for (int curveSetIndex = 0; curveSetIndex < curCurveSetLenght; curveSetIndex++)
+                {
+                    var curCurveInfo = curCurveSet.GetArrayElementAtIndex(curveSetIndex);
+                    if(isHaveAttribute)
+                    {
+                        Debug.Log(curveSetName + " index : " + curveSetIndex + " attribute: " + curCurveInfo.FindPropertyRelative("attribute").stringValue);
+                    }
+                    else
+                    {
+                        Debug.Log(curveSetName + " index : " + curveSetIndex);
+                    }
+
+                    var curCurve = curCurveInfo.FindPropertyRelative("curve");
+                    var curCurveData = curCurve.FindPropertyRelative("m_Curve");
+                    int curCurveDatalength = curCurveData.arraySize;
+                    Debug.Log("curve lenght：" + curCurveDatalength);
+
+                    for (int curveDataIndex = 3; curveDataIndex < curCurveDatalength; curveDataIndex++)
+                    {
+                        var keyFrameInfo = curCurveData.GetArrayElementAtIndex(curveDataIndex);
+                        ProcessOneKeyframeForConstant2(curveDataIndex, ref curCurveData, ref keyFrameInfo);
+                    }
+                }
+            }
+            soClip.ApplyModifiedProperties();
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
 
         static void ProcessCurveForConstant(AnimationClip animationClip)
@@ -110,7 +159,7 @@ namespace AnimationTools
                     for (int curveDataIndex = 1; curveDataIndex < curCurveDatalength; curveDataIndex++)
                     {
                         var keyFrameInfo = curCurveData.GetArrayElementAtIndex(curveDataIndex);
-                        ProcessOneKeyFrameForConstant(curveDataIndex, ref curCurveData, ref keyFrameInfo);
+                        ProcessOneKeyframeForConstant(curveDataIndex, ref curCurveData, ref keyFrameInfo);
                     }
                 }
             }
@@ -183,14 +232,14 @@ namespace AnimationTools
             akf.TangentMode |= (int)tangentMode << 5;
         }
 
-        static void ProcessOneKeyFrameForConstant(int curveDataIndex, ref SerializedProperty curCurveData, ref SerializedProperty keyFrameInfo)
+        static void ProcessOneKeyframeForConstant(int curveDataIndex, ref SerializedProperty curCurveData, ref SerializedProperty keyFrameInfo)
         {
-            var prevKeyFrameInfo = curCurveData.GetArrayElementAtIndex(curveDataIndex - 1);
-            AnimationKeyframe prevKeyframe = new AnimationKeyframe(ref prevKeyFrameInfo);
+            var prevKeyframeInfo = curCurveData.GetArrayElementAtIndex(curveDataIndex - 1);
+            AnimationKeyframe prevKeyframe = new AnimationKeyframe(ref prevKeyframeInfo);
 
             AnimationKeyframe keyframe = new AnimationKeyframe(ref keyFrameInfo);
             Debug.Log(curveDataIndex + " " + keyframe.ToString());
-            if(keyframe.Time - prevKeyframe.Time <= 0.034f)
+            if (keyframe.Time - prevKeyframe.Time <= 0.034f)
             {
                 Debug.LogWarning("need process: " + keyframe.Time + " " + prevKeyframe.Time);
 
@@ -203,6 +252,72 @@ namespace AnimationTools
                 SetKeyLeftTangentMode(keyframe, AnimationUtility.TangentMode.Constant);
                 keyframe.InSlope = float.PositiveInfinity;
                 keyframe.Save();
+            }
+        }
+
+
+        static Quaternion ConstantQuaternion = new Quaternion(float.PositiveInfinity, float.PositiveInfinity, float.PositiveInfinity, 1);
+
+        static void ProcessOneKeyframeForConstant2(int curveDataIndex, ref SerializedProperty curCurveData, ref SerializedProperty keyFrameInfo)
+        {
+            var keyframe1 = curCurveData.GetArrayElementAtIndex(curveDataIndex - 3);
+            var keyframe2 = curCurveData.GetArrayElementAtIndex(curveDataIndex - 2);
+            var keyframe3 = curCurveData.GetArrayElementAtIndex(curveDataIndex - 1);
+            var keyframe4 = keyFrameInfo;
+
+            float time1 = keyframe1.FindPropertyRelative("time").floatValue;
+            float time2 = keyframe2.FindPropertyRelative("time").floatValue;
+            float time3 = keyframe3.FindPropertyRelative("time").floatValue;
+            float time4 = keyframe4.FindPropertyRelative("time").floatValue;
+
+            if ((time2 - time1 <= 0.034f) && (time4 - time3 <= 0.034f))
+            {
+                var keyframeValue = keyframe1.FindPropertyRelative("value");
+
+                Debug.Log(string.Format("index:{0},{1},{2},{3}", curveDataIndex - 3, curveDataIndex - 2, curveDataIndex - 1, curveDataIndex));
+
+                //SerializedProperty inSlope1 = keyframe1.FindPropertyRelative("inSlope");
+                SerializedProperty inSlope2 = keyframe2.FindPropertyRelative("inSlope");
+                SerializedProperty inSlope3 = keyframe3.FindPropertyRelative("inSlope");
+                SerializedProperty inSlope4 = keyframe4.FindPropertyRelative("inSlope");
+                SerializedProperty outSlope1 = keyframe1.FindPropertyRelative("outSlope");
+                SerializedProperty outSlope2 = keyframe2.FindPropertyRelative("outSlope");
+                SerializedProperty outSlope3 = keyframe3.FindPropertyRelative("outSlope");
+                //SerializedProperty outSlope4 = keyframe4.FindPropertyRelative("outSlope");
+
+                switch (keyframeValue.propertyType)
+                {
+                    case SerializedPropertyType.Float:
+                        break;
+                    case SerializedPropertyType.Vector3:
+                        break;
+                    case SerializedPropertyType.Vector4:
+                        break;
+                    case SerializedPropertyType.Quaternion:
+                        {
+                            outSlope1.quaternionValue = ConstantQuaternion;
+                            inSlope2.quaternionValue = ConstantQuaternion;
+                            outSlope3.quaternionValue = ConstantQuaternion;
+                            inSlope4.quaternionValue = ConstantQuaternion;
+                        }
+                        break;
+                }
+
+                if(time3 - time2 <= 0.034f)
+                {
+                    outSlope2.quaternionValue = ConstantQuaternion;
+                    inSlope3.quaternionValue = ConstantQuaternion;
+                }
+
+                //prevKeyframe.OutSlope = float.PositiveInfinity;
+                //SetKeyBroken(prevKeyframe, true);
+                //SetKeyRightTangentMode(prevKeyframe, AnimationUtility.TangentMode.Constant);
+                //prevKeyframe.Save();
+
+                //SetKeyBroken(keyframe, true);
+                //SetKeyLeftTangentMode(keyframe, AnimationUtility.TangentMode.Constant);
+                //keyframe.InSlope = float.PositiveInfinity;
+                //keyframe.Save();
             }
         }
 
