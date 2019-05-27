@@ -10,6 +10,10 @@ You can select *.anim file or select animation clips of FBX.
 
 3.Done.
 
+![Correct curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_correct_curve.png)
 
+![Wrong curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_wrong_curve.jpg)
+
+![Result curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_result_curve.png)
 
 
