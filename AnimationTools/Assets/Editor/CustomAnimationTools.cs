@@ -178,6 +178,20 @@ namespace AnimationTools
             tangentModeProp.intValue |= (int)tangentMode << 5;
         }
 
+        static float CalculateLinearTangent(SerializedProperty keyframeInfo, SerializedProperty toKeyframeInfo)
+        {
+            float curTime = keyframeInfo.FindPropertyRelative("time").floatValue;
+            float toTime = toKeyframeInfo.FindPropertyRelative("time").floatValue;
+            float curValue = keyframeInfo.FindPropertyRelative("value").floatValue;
+            float toValue = toKeyframeInfo.FindPropertyRelative("value").floatValue;
+
+            float dt = toTime - curTime;
+            if (Mathf.Abs(dt) < float.Epsilon)
+                return 0.0f;
+
+            return (toValue - curValue) / dt;
+        }
+
         static void ProcessOneKeyframeOfEditorCurve(int curveDataIndex, SerializedProperty curCurveData, float oneKeyframeTime)
         {
             var keyframe1 = curCurveData.GetArrayElementAtIndex(curveDataIndex - 3);
@@ -195,6 +209,7 @@ namespace AnimationTools
             {
                 var keyframeValue = keyframe1.FindPropertyRelative("value");
 
+
                 Debug.Log(string.Format("index:{0},{1},{2},{3}", curveDataIndex - 3, curveDataIndex - 2, curveDataIndex - 1, curveDataIndex));
 
                 SerializedProperty inSlope2 = keyframe2.FindPropertyRelative("inSlope");
@@ -207,23 +222,26 @@ namespace AnimationTools
                 switch (keyframeValue.propertyType)
                 {
                     case SerializedPropertyType.Float:
-                        SetKeyBroken(keyframe1, true);
-                        SetKeyRightTangentMode(keyframe1, AnimationUtility.TangentMode.Linear);
+                        {
+                            SetKeyBroken(keyframe1, true);
+                            SetKeyRightTangentMode(keyframe1, AnimationUtility.TangentMode.Linear);
 
-                        SetKeyBroken(keyframe2, true);
-                        SetKeyLeftTangentMode(keyframe2, AnimationUtility.TangentMode.Linear);
-                        SetKeyRightTangentMode(keyframe2, AnimationUtility.TangentMode.Constant);
-                        inSlope2.floatValue = float.PositiveInfinity;
-                        outSlope2.floatValue = float.PositiveInfinity;
+                            SetKeyBroken(keyframe2, true);
+                            SetKeyLeftTangentMode(keyframe2, AnimationUtility.TangentMode.Linear);
+                            SetKeyRightTangentMode(keyframe2, AnimationUtility.TangentMode.Constant);
+                            inSlope2.floatValue = CalculateLinearTangent(keyframe2, keyframe1);
+                            outSlope2.floatValue = float.PositiveInfinity;
 
-                        SetKeyBroken(keyframe3, true);
-                        SetKeyLeftTangentMode(keyframe3, AnimationUtility.TangentMode.Constant);
-                        SetKeyRightTangentMode(keyframe3, AnimationUtility.TangentMode.Linear);
-                        inSlope3.floatValue = float.PositiveInfinity;
-                        outSlope3.floatValue = float.PositiveInfinity;
+                            SetKeyBroken(keyframe3, true);
+                            SetKeyLeftTangentMode(keyframe3, AnimationUtility.TangentMode.Constant);
+                            SetKeyRightTangentMode(keyframe3, AnimationUtility.TangentMode.Linear);
+                            inSlope3.floatValue = float.PositiveInfinity;
+                            outSlope3.floatValue = CalculateLinearTangent(keyframe3, keyframe4);
 
-                        SetKeyBroken(keyframe4, true);
-                        SetKeyLeftTangentMode(keyframe4, AnimationUtility.TangentMode.Linear);
+                            SetKeyBroken(keyframe4, true);
+                            SetKeyLeftTangentMode(keyframe4, AnimationUtility.TangentMode.Linear);
+                        }
+                       
                         break;
                 }
             }
