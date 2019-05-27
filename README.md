@@ -14,9 +14,12 @@ You can select *.anim file or select animation clips of FBX.
 Animation in Maya
 ![Correct curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_correct_curve.png)
 
-FBX imported into Unity. FBX settings are default.
+---
+
+FBX imported into Unity. FBX settings are default. But this curve is wrong.
 ![Wrong curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_wrong_curve.jpg)
 
+---
 Animation result after processed.
 ![Result curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_result_curve.png)
 
