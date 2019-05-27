@@ -1,25 +1,15 @@
 # CustomAnimationTools
 
-Fix rotation interpolation of constant.   Unity 5.5
+Fix rotation interpolation of constant on Unity 2018.4.0f1
 
-This tool only support *.anim file, not support FBX file.
+You can select *.anim file or select animation clips of FBX.
 
+1.select animtion in Project window
 
-1.Open you animtion in Unity Animtion Window
+2.click AnimationTool->ProcessRotationInterpolationForConstant
 
-2.Select a key frame in curve, and set tangent to constant, the key frame which you want constant.
-
-3.select animtion in Project window
-
-4.click AnimationTool->ProcessRotationInterpolationForConstant
-
-5.Done.
+3.Done.
 
 
 
-About this demo.
 
-
-test_interpolation.anim doesn't expect when playing.
-
-test_ok.anim is processed from test_interpolation.anim.
