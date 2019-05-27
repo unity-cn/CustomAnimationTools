@@ -9,7 +9,7 @@ namespace AnimationTools
         private static int CurveCounter = 0;
         static System.DateTime StartTime;
 
-        [MenuItem("AnimationTool/ProcessRotationInterpolationForConstant %e")]
+        [MenuItem("AnimationTool/ProcessRotationInterpolationForConstant")]
         static void Execute()
         {
             CurveCounter = 0;
