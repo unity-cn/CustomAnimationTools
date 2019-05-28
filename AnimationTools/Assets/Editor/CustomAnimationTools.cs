@@ -8,8 +8,9 @@ namespace AnimationTools
     {
         private static int CurveCounter = 0;
         static System.DateTime StartTime;
+        const float TangentDegreeDifferent = 10;
 
-        [MenuItem("AnimationTool/ProcessForConstant")]
+        [MenuItem("AnimationTool/ProcessForConstant %e")]
         static void Execute()
         {
             CurveCounter = 0;
@@ -46,7 +47,7 @@ namespace AnimationTools
                 }
             }
             AssetDatabase.SaveAssets();
-            Debug.Log("Time: " + ((System.DateTime.Now - StartTime).TotalMilliseconds / 1000) + "s.");
+            Debug.Log("Cruve sum: " + CurveCounter +  " Time: " + ((System.DateTime.Now - StartTime).TotalMilliseconds / 1000) + "s.");
         }
 
         static string CopyAnimation(AnimationClip sourceClip)
@@ -71,7 +72,7 @@ namespace AnimationTools
 
         static void ProcessCurveForConstant(AnimationClip animationClip)
         {
-            EditorCurveBinding[] curveBindings = AnimationUtility.GetCurveBindings(animationClip);
+            AnimationUtility.GetCurveBindings(animationClip);
             EditorUtility.SetDirty(animationClip);
 
             var soClip = new SerializedObject(animationClip);
@@ -79,6 +80,7 @@ namespace AnimationTools
             float oneKeyframeTime = (float)((int)((1.0f / sampleRate) * 1000)) / 1000 + 0.001f;
 
             string[] editorCurveSetNames = new string[] { "m_EditorCurves", "m_EulerEditorCurves" };
+            //string[] editorCurveSetNames = new string[] { "m_EditorCurves" };
 
             foreach (var editorCurveSetName in editorCurveSetNames)
             {
@@ -204,21 +206,30 @@ namespace AnimationTools
             float time3 = keyframe3.FindPropertyRelative("time").floatValue;
             float time4 = keyframe4.FindPropertyRelative("time").floatValue;
 
+            SerializedProperty outSlope1 = keyframe1.FindPropertyRelative("outSlope");
+            SerializedProperty inSlope2 = keyframe2.FindPropertyRelative("inSlope");
+            SerializedProperty outSlope2 = keyframe2.FindPropertyRelative("outSlope");
+            SerializedProperty inSlope3 = keyframe3.FindPropertyRelative("inSlope");
+            SerializedProperty outSlope3 = keyframe3.FindPropertyRelative("outSlope");
+            SerializedProperty inSlope4 = keyframe4.FindPropertyRelative("inSlope");
+
+            float outTangetDegree1 = Mathf.Rad2Deg * Mathf.Atan(outSlope1.floatValue * oneKeyframeTime);
+            float inTangetDegree2 = Mathf.Rad2Deg * Mathf.Atan(inSlope2.floatValue * oneKeyframeTime);
+            float outTangetDegree3 = Mathf.Rad2Deg * Mathf.Atan(outSlope3.floatValue * oneKeyframeTime);
+            float inTangetDegree4 = Mathf.Rad2Deg * Mathf.Atan(inSlope4.floatValue * oneKeyframeTime);
+
+            float AngleDiff1 = Mathf.Abs(outTangetDegree1 - inTangetDegree2);
+            float AngleDiff2 = Mathf.Abs(outTangetDegree3 - inTangetDegree4);
             //check constant keyframe
-            if ((time2 - time1 <= oneKeyframeTime) && (time3 - time2 <= oneKeyframeTime) && (time4 - time3 <= oneKeyframeTime))
+            if ((time2 - time1 <= oneKeyframeTime) 
+                && (time3 - time2 <= oneKeyframeTime) 
+                && (time4 - time3 <= oneKeyframeTime)
+                && AngleDiff1 > TangentDegreeDifferent
+                && AngleDiff2 > TangentDegreeDifferent)
             {
-                var keyframeValue = keyframe1.FindPropertyRelative("value");
-
-
                 Debug.Log(string.Format("index:{0},{1},{2},{3}", curveDataIndex - 3, curveDataIndex - 2, curveDataIndex - 1, curveDataIndex));
 
-                SerializedProperty inSlope2 = keyframe2.FindPropertyRelative("inSlope");
-                SerializedProperty inSlope3 = keyframe3.FindPropertyRelative("inSlope");
-                SerializedProperty inSlope4 = keyframe4.FindPropertyRelative("inSlope");
-                SerializedProperty outSlope1 = keyframe1.FindPropertyRelative("outSlope");
-                SerializedProperty outSlope2 = keyframe2.FindPropertyRelative("outSlope");
-                SerializedProperty outSlope3 = keyframe3.FindPropertyRelative("outSlope");
-
+                var keyframeValue = keyframe1.FindPropertyRelative("value");
                 switch (keyframeValue.propertyType)
                 {
                     case SerializedPropertyType.Float:
@@ -241,7 +252,6 @@ namespace AnimationTools
                             SetKeyBroken(keyframe4, true);
                             SetKeyLeftTangentMode(keyframe4, AnimationUtility.TangentMode.Linear);
                         }
-                       
                         break;
                 }
             }
@@ -263,19 +273,22 @@ namespace AnimationTools
             float time3 = keyframe3.FindPropertyRelative("time").floatValue;
             float time4 = keyframe4.FindPropertyRelative("time").floatValue;
 
+            SerializedProperty outSlope1 = keyframe1.FindPropertyRelative("outSlope");
+            SerializedProperty inSlope2 = keyframe2.FindPropertyRelative("inSlope");
+            SerializedProperty outSlope2 = keyframe2.FindPropertyRelative("outSlope");
+            SerializedProperty inSlope3 = keyframe3.FindPropertyRelative("inSlope");
+            SerializedProperty outSlope3 = keyframe3.FindPropertyRelative("outSlope");
+            SerializedProperty inSlope4 = keyframe4.FindPropertyRelative("inSlope");
+
             //check constant keyframe
-            if ((time2 - time1 <= oneKeyframeTime) && (time3 - time2 <= oneKeyframeTime) && (time4 - time3 <= oneKeyframeTime))
+            if ((time2 - time1 <= oneKeyframeTime)
+                && (time3 - time2 <= oneKeyframeTime)
+                && (time4 - time3 <= oneKeyframeTime)
+                )
             {
                 var keyframeValue = keyframe1.FindPropertyRelative("value");
 
                 Debug.Log(string.Format("index:{0},{1},{2},{3}", curveDataIndex - 3, curveDataIndex - 2, curveDataIndex - 1, curveDataIndex));
-
-                SerializedProperty inSlope2 = keyframe2.FindPropertyRelative("inSlope");
-                SerializedProperty inSlope3 = keyframe3.FindPropertyRelative("inSlope");
-                SerializedProperty inSlope4 = keyframe4.FindPropertyRelative("inSlope");
-                SerializedProperty outSlope1 = keyframe1.FindPropertyRelative("outSlope");
-                SerializedProperty outSlope2 = keyframe2.FindPropertyRelative("outSlope");
-                SerializedProperty outSlope3 = keyframe3.FindPropertyRelative("outSlope");
 
                 switch (keyframeValue.propertyType)
                 {
