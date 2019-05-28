@@ -5,9 +5,9 @@ Rotation curves are tested.
 
 You can select *.anim file or select animation clips of FBX.
 
-1.select animtion in Project window
+1.Select animtion in Project window
 
-2.click AnimationTool->ProcessForConstant
+2.Click menu: AnimationTool->ProcessForConstant
 
 3.Done.
 
