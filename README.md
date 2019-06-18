@@ -23,5 +23,7 @@ FBX imported into Unity. FBX settings are default. But this curve is wrong.
 Animation result after processed.
 ![Result curve](https://github.com/unity-cn/CustomAnimationTools/blob/master/AnimationTools/Assets/TestCase2/_result_curve.png)
 
+---
 Notice:
+
 1.Keyframes must be full in animation. Please try bake keys on every frame.
